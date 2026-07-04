@@ -1,0 +1,17 @@
+{
+  "name": "sticky-electron",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsc && electron .",
+    "build": "tsc",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^31.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.2"
+  }
+}

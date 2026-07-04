@@ -1,0 +1,68 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: #1a1a2e;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sticky-strip {
+  transition: opacity 0.15s;
+}
+
+.sticky-strip:active {
+  cursor: grabbing;
+}
+
+.note-markdown {
+  line-height: 1.6;
+}
+
+.note-markdown h1 { font-size: 1.3em; font-weight: 700; margin-bottom: 6px; }
+.note-markdown h2 { font-size: 1.15em; font-weight: 600; margin-bottom: 5px; }
+.note-markdown h3 { font-size: 1em; font-weight: 600; margin-bottom: 4px; }
+.note-markdown p { margin-bottom: 6px; }
+.note-markdown p:last-child { margin-bottom: 0; }
+.note-markdown ul, .note-markdown ol { padding-left: 18px; margin-bottom: 6px; }
+.note-markdown li { margin-bottom: 2px; }
+.note-markdown code {
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88em;
+}
+.note-markdown pre code {
+  display: block;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  background: rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+.note-markdown blockquote {
+  border-left: 3px solid rgba(0,0,0,0.2);
+  padding-left: 10px;
+  opacity: 0.75;
+  margin-bottom: 6px;
+}
+.note-markdown strong { font-weight: 600; }
+.note-markdown em { font-style: italic; }
+.note-markdown a { color: #4f46e5; text-decoration: underline; }
+.note-markdown input[type="checkbox"] { margin-right: 5px; }
+.note-markdown hr { border: none; border-top: 1px solid rgba(0,0,0,0.15); margin: 8px 0; }
+.note-markdown table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 6px; }
+.note-markdown th, .note-markdown td { border: 1px solid rgba(0,0,0,0.15); padding: 4px 8px; text-align: left; }
+.note-markdown th { background: rgba(0,0,0,0.06); font-weight: 600; }
+
+input[type="range"] {
+  accent-color: #6366f1;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
