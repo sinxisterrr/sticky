@@ -10,7 +10,20 @@ import notesRoutes from './routes/notes';
 const app = express();
 const port = process.env.PORT ?? 3001;
 
-app.use(cors({ origin: process.env.FRONTEND_URL?.split(',') ?? '*', credentials: true }));
+const allowedOrigins = (process.env.FRONTEND_URL ?? '*')
+  .split(',')
+  .map(o => o.trim().replace(/\/$/, ''));
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use('/auth', authRoutes);
