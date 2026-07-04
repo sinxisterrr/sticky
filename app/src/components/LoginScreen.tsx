@@ -21,28 +21,38 @@ declare global {
 
 export default function LoginScreen({ onLogin }: Props) {
   useEffect(() => {
-    const el = document.getElementById('google-btn');
-    if (!el || !window.google) return;
+    function init() {
+      const el = document.getElementById('google-btn');
+      if (!el || !window.google) return;
 
-    window.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async ({ credential }: { credential: string }) => {
-        try {
-          const { token, user } = await api.auth.google(credential);
-          localStorage.setItem('sticky_token', token);
-          onLogin(user, token);
-        } catch (e) {
-          console.error('Login failed', e);
-        }
-      },
-    });
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: async ({ credential }: { credential: string }) => {
+          try {
+            const { token, user } = await api.auth.google(credential);
+            localStorage.setItem('sticky_token', token);
+            onLogin(user, token);
+          } catch (e) {
+            console.error('Login failed', e);
+          }
+        },
+      });
 
-    window.google.accounts.id.renderButton(el, {
-      theme: 'outline',
-      size: 'large',
-      shape: 'pill',
-      text: 'sign_in_with',
-    });
+      window.google.accounts.id.renderButton(el, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'sign_in_with',
+      });
+    }
+
+    if (window.google) {
+      init();
+    } else {
+      const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+      script?.addEventListener('load', init);
+      return () => script?.removeEventListener('load', init);
+    }
   }, [onLogin]);
 
   return (
