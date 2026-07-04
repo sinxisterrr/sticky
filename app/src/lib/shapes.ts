@@ -34,4 +34,16 @@ export function hasStickyStrip(shape: NoteShape): boolean {
   return shape === 'rectangle' || shape === 'square';
 }
 
+// Returns CSS padding for the inner content div so text stays inside the visible shape area.
+export function getContentPadding(shape: NoteShape, size: number): string {
+  const p = (f: number) => `${Math.round(size * f)}px`;
+  switch (shape) {
+    case 'circle':   return p(0.175);
+    case 'hexagon':  return `${p(0.15)} ${p(0.28)}`;
+    case 'star':     return `${p(0.33)} ${p(0.32)}`;
+    case 'flower':   return `${p(0.23)} ${p(0.27)}`;
+    default:         return '0';
+  }
+}
+
 import type React from 'react';
