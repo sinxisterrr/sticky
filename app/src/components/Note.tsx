@@ -118,6 +118,8 @@ export default function Note({ note, onUpdate, onDelete, onFocus }: Props) {
         zIndex: note.z_index,
         userSelect: editing ? 'text' : 'none',
         touchAction: 'none',
+        // faint guide for shaped notes so the resize grip corner is findable
+        outline: (!hasStrip && showToolbar) ? '1px dashed rgba(255,255,255,0.18)' : 'none',
       }}
       onMouseEnter={() => setShowToolbar(true)}
       onMouseLeave={() => { if (!editing) setShowToolbar(false); }}
@@ -190,6 +192,7 @@ export default function Note({ note, onUpdate, onDelete, onFocus }: Props) {
                 editing={editing}
                 content={localContent}
                 note={note}
+                hasStrip={true}
                 textareaRef={textareaRef}
                 onChange={handleContentChange}
                 onBlur={stopEditing}
@@ -215,6 +218,7 @@ export default function Note({ note, onUpdate, onDelete, onFocus }: Props) {
               editing={editing}
               content={localContent}
               note={note}
+              hasStrip={false}
               textareaRef={textareaRef}
               onChange={handleContentChange}
               onBlur={stopEditing}
@@ -281,22 +285,63 @@ interface BodyProps {
   editing: boolean;
   content: string;
   note: NoteType;
+  hasStrip: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   onChange: (v: string) => void;
   onBlur: () => void;
 }
 
-function NoteBody({ editing, content, note, textareaRef, onChange, onBlur }: BodyProps) {
-  const textStyle: React.CSSProperties = {
+function NoteBody({ editing, content, note, hasStrip, textareaRef, onChange, onBlur }: BodyProps) {
+  const base: React.CSSProperties = {
     fontFamily: note.font,
     fontSize: note.font_size,
     lineHeight: 1.6,
     color: '#1a1a2e',
-    width: '100%',
-    flex: 1,
   };
 
+  if (editing && hasStrip) {
+    // Live split view: raw markdown on top, rendered preview below
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 0 }}>
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={e => onChange(e.target.value)}
+          onBlur={onBlur}
+          style={{
+            ...base,
+            fontFamily: 'Fira Code, monospace',
+            fontSize: Math.max(11, note.font_size - 1),
+            background: 'rgba(0,0,0,0.05)',
+            border: 'none',
+            borderRadius: '6px 6px 0 0',
+            outline: 'none',
+            resize: 'none',
+            padding: '6px 8px',
+            flexShrink: 0,
+            minHeight: 56,
+            maxHeight: 150,
+            overflowY: 'auto',
+            width: '100%',
+          }}
+          placeholder="markdown here..."
+        />
+        <div style={{ height: 1, background: 'rgba(0,0,0,0.1)', flexShrink: 0 }} />
+        <div
+          style={{ ...base, flex: 1, overflow: 'auto', minHeight: 0, paddingTop: 4 }}
+          className="note-markdown"
+        >
+          {content
+            ? <NoteMarkdown content={content} onChange={onChange} />
+            : <span style={{ opacity: 0.28, fontStyle: 'italic' }}>preview...</span>
+          }
+        </div>
+      </div>
+    );
+  }
+
   if (editing) {
+    // Textarea-only for shaped notes (too small for split)
     return (
       <textarea
         ref={textareaRef}
@@ -304,60 +349,65 @@ function NoteBody({ editing, content, note, textareaRef, onChange, onBlur }: Bod
         onChange={e => onChange(e.target.value)}
         onBlur={onBlur}
         style={{
-          ...textStyle,
+          ...base,
           background: 'transparent',
           border: 'none',
           outline: 'none',
           resize: 'none',
+          width: '100%',
           height: '100%',
-          minHeight: 60,
+          minHeight: 40,
         }}
-        placeholder="write something..."
+        placeholder="write..."
       />
     );
   }
 
   if (!content) {
     return (
-      <span style={{ ...textStyle, opacity: 0.35, fontStyle: 'italic', fontSize: note.font_size - 1 }}>
+      <span style={{ ...base, opacity: 0.35, fontStyle: 'italic', fontSize: note.font_size - 1 }}>
         double-click to write...
       </span>
     );
   }
 
-  // Track checkbox ordinal for interactive toggle
-  let checkboxIndex = 0;
-
   return (
-    <div style={{ ...textStyle, overflow: 'auto', flex: 1 }} className="note-markdown">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          input: ({ type, checked }) => {
-            if (type !== 'checkbox') return null;
-            const idx = checkboxIndex++;
-            return (
-              <input
-                type="checkbox"
-                checked={!!checked}
-                style={{ cursor: 'pointer', marginRight: 5 }}
-                onChange={() => {
-                  let n = 0;
-                  const next = content.replace(/- \[(x| )\]/gi, m => {
-                    const hit = n++ === idx;
-                    if (!hit) return m;
-                    return /x/i.test(m[3]) ? '- [ ]' : '- [x]';
-                  });
-                  onChange(next);
-                }}
-              />
-            );
-          },
-        }}
-      >
-        {content}
-      </ReactMarkdown>
+    <div style={{ ...base, overflow: 'auto', flex: 1, width: '100%' }} className="note-markdown">
+      <NoteMarkdown content={content} onChange={onChange} />
     </div>
+  );
+}
+
+function NoteMarkdown({ content, onChange }: { content: string; onChange: (v: string) => void }) {
+  let ci = 0;
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        input: ({ type, checked }) => {
+          if (type !== 'checkbox') return null;
+          const idx = ci++;
+          return (
+            <input
+              type="checkbox"
+              checked={!!checked}
+              style={{ cursor: 'pointer', marginRight: 5 }}
+              onChange={() => {
+                let n = 0;
+                const next = content.replace(/- \[(x| )\]/gi, m => {
+                  const hit = n++ === idx;
+                  if (!hit) return m;
+                  return /x/i.test(m[3]) ? '- [ ]' : '- [x]';
+                });
+                onChange(next);
+              }}
+            />
+          );
+        },
+      }}
+    >
+      {content}
+    </ReactMarkdown>
   );
 }
 
