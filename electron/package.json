@@ -1,17 +1,46 @@
 {
-  "name": "sticky-electron",
+  "name": "sticky",
   "version": "1.0.0",
   "main": "dist/main.js",
   "scripts": {
     "dev": "tsc && electron .",
     "build": "tsc",
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "tsc && electron-builder --win"
+  },
+  "build": {
+    "appId": "codes.continuum.sticky",
+    "productName": "Sticky",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "!node_modules"
+    ],
+    "extraResources": [
+      {
+        "from": "../app/dist",
+        "to": "web",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
+    }
   },
   "dependencies": {
     "electron": "^31.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "electron-builder": "^24.13.3",
     "typescript": "^5.5.2"
   }
 }

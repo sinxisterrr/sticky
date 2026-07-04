@@ -1,6 +1,9 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
+import { db } from './db/db';
 import authRoutes from './routes/auth';
 import notesRoutes from './routes/notes';
 
@@ -15,4 +18,11 @@ app.use('/notes', notesRoutes);
 
 app.get('/health', (_, res) => res.json({ ok: true }));
 
-app.listen(port, () => console.log(`Sticky API on :${port}`));
+async function start() {
+  const schema = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf-8');
+  await db.query(schema);
+  console.log('DB ready');
+  app.listen(port, () => console.log(`Sticky API on :${port}`));
+}
+
+start().catch(err => { console.error('Startup failed:', err); process.exit(1); });
